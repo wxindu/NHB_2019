@@ -76,9 +76,9 @@ controls <-
     "fd05s00",
     "fpclsi00",
     "fpchti00",
-    "fdkessl",
-    "fdtots00",
-    "foede000"
+    "fdkessl"#,
+    #"fdtots00",
+    #"foede000"
   )
 
 #######################################################
@@ -156,8 +156,8 @@ data_select <-
     "fpclsi00",
     "fpchti00",
     "fdkessl",
-    "fdtots00",
-    "foede000",
+    #"fdtots00",
+    #"foede000",
     "tech"
   )]
 data_select$id <- seq.int(nrow(data_select))
@@ -177,80 +177,80 @@ results_frame_pr <-
 ##########################################################################################
 # force null onto data from each specification
 ##########################################################################################
-   #  y.null.cm <- list(0)
-   #  y.null.pr <- list(0)
-   # 
-   #  for (i in 1:nrow(results_frame_cm)){
-   # 
-   #    print(i/nrow(results_frame_cm))
-   # 
-   #    #################################################
-   #    # Make variables
-   #    #################################################
-   #    
-   #    data$dv <-
-   #      rowMeans(subset(data, select = results_frame_cm$y_variable[[i]]),
-   #               na.rm = FALSE)
-   #    data$iv <-
-   #      rowMeans(subset(data, select = results_frame_cm$x_variable[[i]]),
-   #               na.rm = FALSE)
-   #    #################################################
-   #    # Run Correlations
-   #    #################################################
-   #    
-   #    if (results_frame_cm$controls[i] == "No Controls") {
-   #      reg <- lm(dv ~ iv, data = data)
-   #    } else if (results_frame_cm$controls[i] == "Controls") {
-   #      reg <- lm(dv ~ iv + edumot + fd06e00 + clpar + fcpaab00 + 
-   #          fpwrdscm + fdacaq00 + fd05s00 + 
-   #          fpclsi00 + fpchti00 + fdkessl + fdtots00 + foede000,
-   #        data = data
-   #      )
-   #    }
-   # 
-   #    b.i <- summary(reg)$coef[[2, 1]] %>% {ifelse(. == 0, NA, .)}
-   # 
-   #    y.null.i <- data$dv-(b.i*data$iv)
-   #    y.null.cm[i] <- as.data.frame(y.null.i)
-   #  }
-   # 
-   # save(y.null.cm, file = "4_3_y_null_mcs_cm.RData")
-   # 
-   # for (i in 1:nrow(results_frame_pr)){
-   # 
-   #   print(i/nrow(results_frame_pr))
-   # 
-   #   #################################################
-   #   # Make variables
-   #   #################################################
-   # 
-   #   data$dv <-
-   #     rowMeans(subset(data, select = results_frame_pr$y_variable[[i]]),
-   #              na.rm = FALSE)
-   #   data$iv <-
-   #     rowMeans(subset(data, select = results_frame_pr$x_variable[[i]]),
-   #              na.rm = FALSE)
-   #   #################################################
-   #   # Run Correlations
-   #   #################################################
-   # 
-   #   if (results_frame_pr$controls[i] == "No Controls") {
-   #     reg <- lm(dv ~ iv, data = data)
-   #   } else if (results_frame_pr$controls[i] == "Controls") {
-   #     reg <- lm(dv ~ iv + edumot + fd06e00 + clpar + fcpaab00 +
-   #                 fpwrdscm + fdacaq00 + fd05s00 +
-   #                 fpclsi00 + fpchti00 + fdkessl + fdtots00 + foede000,
-   #               data = data
-   #     )
-   #   }
-   # 
-   #   b.i <- summary(reg)$coef[[2, 1]] %>% {ifelse(. == 0, NA, .)}
-   # 
-   #   y.null.i <- data$dv-(b.i*data$iv)
-   #   y.null.pr[i] <- as.data.frame(y.null.i)
-   # }
-   # 
-   # save(y.null.pr, file = "4_3_y_null_mcs_pr.RData")
+    y.null.cm <- list(0)
+    y.null.pr <- list(0)
+
+    for (i in 1:nrow(results_frame_cm)){
+
+      print(i/nrow(results_frame_cm))
+
+      #################################################
+      # Make variables
+      #################################################
+
+      data$dv <-
+        rowMeans(subset(data, select = results_frame_cm$y_variable[[i]]),
+                 na.rm = FALSE)
+      data$iv <-
+        rowMeans(subset(data, select = results_frame_cm$x_variable[[i]]),
+                 na.rm = FALSE)
+      #################################################
+      # Run Correlations
+      #################################################
+
+      if (results_frame_cm$controls[i] == "No Controls") {
+        reg <- lm(dv ~ iv, data = data)
+      } else if (results_frame_cm$controls[i] == "Controls") {
+        reg <- lm(dv ~ iv + edumot + fd06e00 + clpar + fcpaab00 +
+            fpwrdscm + fdacaq00 + fd05s00 +
+            fpclsi00 + fpchti00 + fdkessl, #+ fdtots00 + foede000,
+          data = data
+        )
+      }
+
+      b.i <- summary(reg)$coef[[2, 1]] %>% {ifelse(. == 0, NA, .)}
+
+      y.null.i <- data$dv-(b.i*data$iv)
+      y.null.cm[i] <- as.data.frame(y.null.i)
+    }
+
+   save(y.null.cm, file = "4_3_y_null_mcs_cm.RData")
+
+   for (i in 1:nrow(results_frame_pr)){
+
+     print(i/nrow(results_frame_pr))
+
+     #################################################
+     # Make variables
+     #################################################
+
+     data$dv <-
+       rowMeans(subset(data, select = results_frame_pr$y_variable[[i]]),
+                na.rm = FALSE)
+     data$iv <-
+       rowMeans(subset(data, select = results_frame_pr$x_variable[[i]]),
+                na.rm = FALSE)
+     #################################################
+     # Run Correlations
+     #################################################
+
+     if (results_frame_pr$controls[i] == "No Controls") {
+       reg <- lm(dv ~ iv, data = data)
+     } else if (results_frame_pr$controls[i] == "Controls") {
+       reg <- lm(dv ~ iv + edumot + fd06e00 + clpar + fcpaab00 +
+                   fpwrdscm + fdacaq00 + fd05s00 +
+                   fpclsi00 + fpchti00 + fdkessl,# + fdtots00 + foede000,
+                 data = data
+       )
+     }
+
+     b.i <- summary(reg)$coef[[2, 1]] %>% {ifelse(. == 0, NA, .)}
+
+     y.null.i <- data$dv-(b.i*data$iv)
+     y.null.pr[i] <- as.data.frame(y.null.i)
+   }
+  here()
+   save(y.null.pr, file = "4_3_y_null_mcs_pr.RData")
  
  load("4_3_y_null_mcs_cm.RData")
  load("4_3_y_null_mcs_pr.RData")
@@ -316,7 +316,7 @@ results_frame_pr <-
      } else if (results_frame_cm$controls[n] == "Controls") {
        reg <- lm(dv ~ iv + edumot + fd06e00 + clpar + fcpaab00 + 
                    fpwrdscm + fdacaq00 + fd05s00 + 
-                   fpclsi00 + fpchti00 + fdkessl + fdtots00 + foede000,
+                   fpclsi00 + fpchti00 + fdkessl,# + fdtots00 + foede000,
             data = data[k,])
      }
      
@@ -364,7 +364,7 @@ results_frame_pr <-
      } else if (results_frame_pr$controls[n] == "Controls") {
        reg <- lm(dv ~ iv + edumot + fd06e00 + clpar + fcpaab00 + 
                    fpwrdscm + fdacaq00 + fd05s00 + 
-                   fpclsi00 + fpchti00 + fdkessl + fdtots00 + foede000,
+                   fpclsi00 + fpchti00 + fdkessl,# + fdtots00 + foede000,
                  data = data[k,])
      }
      
@@ -437,3 +437,4 @@ results_frame_pr <-
  #######################################################
 print(permutation_frame)
 write.csv(permutation_frame,file=paste0(vars["HOME"],"/mcs_permutation_frame.",vars["SLURM_ARRAY_JOB_ID"],".",vars["SLURM_ARRAY_TASK_ID"], ".csv"))
+write.csv(permutation_frame, file = here("mcs_permutation_frame.csv"))

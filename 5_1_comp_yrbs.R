@@ -8,7 +8,7 @@ library(heplots)
 
 vars <- Sys.getenv(c("HOME"))
 data <- read.csv(file=paste0(vars["HOME"],"/1_1_prep_yrbs_data.csv"), header=TRUE, sep = ",")
-
+data <- read.csv(here("1_1_prep_yrbs_data.csv"), header = TRUE, sep = ",")
 ### make all data numeric
 data_numeric <-
   data.frame(lapply(data, function(x)
@@ -67,7 +67,7 @@ comp_curve <- function(input) {
   
   for (n in 1:nrow(results_frame)) {
     
-    print(n)
+    print(n/nrow(results_frame))
     #################################################
     # Make variables
     #################################################
@@ -131,20 +131,37 @@ comp_curve <- function(input) {
 #recode asthma so that 1 = no asthma, 2 not sure, 3 = asthma
 data$q87r <- ifelse(data$q87 == 1, 3, ifelse(data$q87 == 2, 1, 2))
 
+# x_variables <- c(
+#   "q72",
+#   "q79",
+#   "q76",
+#   "q88",
+#   "q74",
+#   "q78",
+#   "q69",
+#   "q87r",
+#   "q47",
+#   "q44",
+#   "q24_n",
+#   "q18",
+#   "tech", 
+#   "q80_n", "q81_n"
+# )
 x_variables <- c(
-  "q72",
-  "q79",
-  "q76",
-  "q88",
-  "q74",
+  "q71",
   "q78",
-  "q69",
-  "q87r",
-  "q47",
-  "q44",
-  "q24_n",
-  "q18",
-  "tech"
+  "q75",
+  "q87",
+  "q73",
+  "q77",
+  "q68",
+  "q86r",
+  "q46",
+  "q43",
+  "q23_n",
+  "q17",
+  "tech", 
+  "q80_n", "q81_n"
 )
 x_names <-
   c(
@@ -160,13 +177,15 @@ x_names <-
     "Bingedrinking",
     "Bullied",
     "Fight",
-    "technology use"
+    "technology use", 
+    "TV Use", "Electronic Device Use"
   )
 
 #######################################################
 # Y Variables
 #######################################################
-y <- c("q26_n", "q27_n", "q28_n", "q29_nd", "q30_nd")
+# y <- c("q26_n", "q27_n", "q28_n", "q29_nd", "q30_nd")
+y <- c("q25_n", "q26_n", "q27_n", "q28_nd", "q29_nd")
 y_variables <-
   (do.call("c", lapply(seq_along(y), function(i)
     combn(y, i, FUN = list))))
@@ -193,27 +212,27 @@ s_names <- c("dichotomous race")
 # Subset Data
 #######################################################
 data_short <- data[, c(
-  "q72",
-  "q79",
-  "q76",
-  "q88",
-  "q80",
-  "q74",
+  "q71",
   "q78",
-  "q69",
-  "q87r",
-  "q47",
-  "q44",
-  "q24_n",
-  "q18",
+  "q75",
+  "q87",
+  "q79",
+  "q73",
+  "q77",
+  "q68",
+  "q86r",
+  "q46",
+  "q43",
+  "q23_n",
+  "q17",
   "tech",
+  "q25_n",
   "q26_n",
   "q27_n",
-  "q28_n",
+  "q28_nd",
   "q29_nd",
-  "q30_nd",
   "year",
-  "race_di"
+  "race_di", "q80_n", "q81_n"
 )]
 
 ##########################################################################################

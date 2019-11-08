@@ -11,9 +11,11 @@
 ##########################################################################################
 library(tidyr)
 library(dplyr)
+library(here)
 
+here()
 vars <- Sys.getenv(c("HOME","SLURM_ARRAY_JOB_ID","SLURM_ARRAY_TASK_ID"))
-data <- read.csv(file=paste0(vars["HOME"],"/1_2_prep_mtf_data.csv"), header=TRUE, sep = ",")
+data <- read.csv("1_2_prep_mtf_data.csv", header=TRUE, sep = ",")
 
 # We run 2 bootstraps with each script and then merge them together in 4_2_2_per_mtf.R
 bootstraps <- 1
@@ -160,43 +162,43 @@ results_frame <-
 # force null onto data from each specification
 # we run this before sending this script to the computer cluster and save the result
 ##########################################################################################
- #  y.null <- list(0)
- # 
- #  for (i in 1:nrow(results_frame)){
- # 
- #    print(i/nrow(results_frame))
- # 
- #    #################################################
- #    # Make variables
- #    #################################################
- #    
- #    data$dv <-
- #      rowMeans(subset(data, select = results_frame$y_variable[[i]]),
- #               na.rm = FALSE)
- #    data$iv <-
- #      rowMeans(subset(data, select = results_frame$x_variable[[i]]),
- #               na.rm = FALSE)
- #    
- #    #################################################
- #    # Run Correlations
- #    #################################################
- #    
- #    if (results_frame$controls[i] == "No Controls") {
- #      reg <- lm(dv ~ iv, data = data)
- #    } else if (results_frame$controls[i] == "Controls") {
- #      reg <- lm(dv ~ iv + v1070r + v7208 + v7216 + v7217 +
- #                  v7329 + v7221 + v7254,
- #        data = data
- #      )
- #    }
- # 
- #    b.i <- summary(reg)$coef[[2, 1]] %>% {ifelse(. == 0, NA, .)}
- # 
- #    y.null.i <- data$dv-(b.i*data$iv)
- #    y.null[i] <- as.data.frame(y.null.i)
- #  }
- # 
- # save(y.null, file = "4_2_y_null_mtf.RData")
+  y.null <- list(0)
+
+  for (i in 1:nrow(results_frame)){
+
+    print(i/nrow(results_frame))
+
+    #################################################
+    # Make variables
+    #################################################
+
+    data$dv <-
+      rowMeans(subset(data, select = results_frame$y_variable[[i]]),
+               na.rm = FALSE)
+    data$iv <-
+      rowMeans(subset(data, select = results_frame$x_variable[[i]]),
+               na.rm = FALSE)
+
+    #################################################
+    # Run Correlations
+    #################################################
+
+    if (results_frame$controls[i] == "No Controls") {
+      reg <- lm(dv ~ iv, data = data)
+    } else if (results_frame$controls[i] == "Controls") {
+      reg <- lm(dv ~ iv + v1070r + v7208 + v7216 + v7217 +
+                  v7329 + v7221 + v7254,
+        data = data
+      )
+    }
+
+    b.i <- summary(reg)$coef[[2, 1]] %>% {ifelse(. == 0, NA, .)}
+
+    y.null.i <- data$dv-(b.i*data$iv)
+    y.null[i] <- as.data.frame(y.null.i)
+  }
+
+ save(y.null, file = "4_2_y_null_mtf.RData")
  
  load("4_2_y_null_mtf.RData")
  
@@ -328,3 +330,4 @@ results_frame <-
  #######################################################
  print(permutation_frame)
  write.csv(permutation_frame,file=paste0(vars["HOME"],"/mtf_permutation_frame.",vars["SLURM_ARRAY_JOB_ID"],".",vars["SLURM_ARRAY_TASK_ID"], ".csv"))
+ 

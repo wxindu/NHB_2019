@@ -60,6 +60,7 @@ plot1 <- ggplot(temp_data, aes(x = 1:nrow(temp_data))) +
 print(plot1)
 setwd(".../6_plot_sca")
 
+
 #############################################
 # Specification Curve: number
 #############################################

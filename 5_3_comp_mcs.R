@@ -8,7 +8,7 @@ library(heplots)
 
 vars <- Sys.getenv(c("HOME"))
 data <- read.csv(file=paste0(vars["HOME"],"/1_3_prep_mcs_data.csv"), header=TRUE, sep = ",")
-
+data <- read.csv(here("1_3_prep_mcs_data.csv"), header = TRUE, sep = ",")
 ####################################################################################
 # Function "resultsframe"
 # takes character vector of outcome variables as an input
@@ -79,8 +79,8 @@ curve <- function(input) {
         scale(dv) ~ scale(iv) + scale(edumot) +
           scale(fd06e00) + scale(clpar) + scale(fcpaab00) + 
           scale(fpwrdscm) + scale(fdacaq00) + scale(fd05s00) + 
-          scale(fpclsi00) + scale(fpchti00) + scale(fdkessl) + scale(fdtots00) +
-          scale(foede000),
+          scale(fpclsi00) + scale(fpchti00) + scale(fdkessl), #+ scale(fdtots00) +
+          #scale(foede000),
         data = data_short
       )
     }
@@ -118,9 +118,9 @@ curve <- function(input) {
 x_variables <- c(
   "fchtcm00",
   "fccycf00r",
-  "fcbrkn00",
-  "fcfrut00",
-  "fcvegi00",
+  "fcbrkn00", ###
+  "fcfrut00", ###
+  "fcvegi00", ###
   "sleeptime",
   "fcglas00r",
   "fcares00r",
@@ -128,6 +128,11 @@ x_variables <- c(
   "fccanb00r",
   "fcalfv00r",
   "hand",
+  "fctvho00r",
+  "fccomh00r",
+  "fccmex00r",
+  "fcinth00r",
+  "fcsome00r",
   "tech"
 )
 x_names <- c(
@@ -143,6 +148,11 @@ x_names <- c(
   "Smoked Weed",
   "Bingedrinking",
   "Handedness",
+  "Weekday TV",
+  "Weekday Electronic Games",
+  "Own Computer",
+  "Use Internet at Home",
+  "Hours of Social Media Use",
   "Technology Use"
 )
 
@@ -171,9 +181,9 @@ controls <-
     "fd05s00",
     "fpclsi00",
     "fpchti00",
-    "fdkessl",
-    "fdtots00",
-    "foede000"
+    "fdkessl"
+    #"fdtots00",
+    #"foede000"
   )
 
 #######################################################
@@ -231,8 +241,13 @@ data_short <-
     "fpclsi00",
     "fpchti00",
     "fdkessl",
-    "fdtots00",
-    "foede000"
+    #"fdtots00",
+    #"foede000"
+    "fctvho00r",
+    "fccomh00r",
+    "fccmex00r",
+    "fcinth00r",
+    "fcsome00r"
   )]
 
 #######################################################
@@ -316,8 +331,13 @@ data_short <-
     "fpclsi00",
     "fpchti00",
     "fdkessl",
-    "fdtots00",
-    "foede000"
+    #"fdtots00",
+    #"foede000", 
+    "fctvho00r",
+    "fccomh00r",
+    "fccmex00r",
+    "fcinth00r",
+    "fcsome00r"
   )]
 
 #######################################################

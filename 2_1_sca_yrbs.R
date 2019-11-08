@@ -7,7 +7,8 @@
 # It is not necessary to run this script over the cluster as it is relatively fast (< 5 min)
 vars <- Sys.getenv(c("HOME"))
 data <- read.csv(file=paste0(vars["HOME"],"/1_1_prep_yrbs_data.csv"), header=TRUE, sep = ",")
-
+library(here)
+data <- read.csv(here("1_1_prep_yrbs_data.csv"), header = TRUE, sep = ",")
 #######################################################
 # Load libraries
 #######################################################
@@ -132,14 +133,20 @@ curve <- function(input) {
 #######################################################
 # X Variables
 #######################################################
-x_variables <- c("q81_n", "q82_n", "tech")
+#x_variables <- c("q81_n", "q82_n", "tech")
+x_variables <- c("q80_n", "q81_n", "tech")
 x_names <-
   c("TV Use", "Electronic Device Use", "Mean Technology Use")
+x_TV <- c("q80_n")
+x_TV_name <- c("TV Use")
+x_ED <- c("q81_n")
+x_ED_name <- c("Electronic Device Use")
 
 #######################################################
 # Y Variables
 #######################################################
-y <-  c("q26_n", "q27_n", "q28_n", "q29_nd", "q30_nd")
+#y <-  c("q26_n", "q27_n", "q28_n", "q29_nd", "q30_nd")
+y <-  c("q25_n", "q26_n", "q27_n", "q28_nd", "q29_nd")
 y_variables <-
   (do.call("c", lapply(seq_along(y), function(i)
     combn(y, i, FUN = list))))
@@ -165,15 +172,27 @@ s_names <- c("dichotomous race")
 #######################################################
 # Subset Data
 #######################################################
+# data_short <- data[, c(
+#   "q81_n",
+#   "q82_n",
+#   "tech",
+#   "q26_n",
+#   "q27_n",
+#   "q28_n",
+#   "q29_nd",
+#   "q30_nd",
+#   "year",
+#   "race_di"
+# )]
 data_short <- data[, c(
+  "q80_n",
   "q81_n",
-  "q82_n",
   "tech",
+  "q25_n",
   "q26_n",
   "q27_n",
-  "q28_n",
+  "q28_nd",
   "q29_nd",
-  "q30_nd",
   "year",
   "race_di"
 )]
@@ -183,5 +202,11 @@ data_short <- data[, c(
 #######################################################
 results_yrbs_sca <-
   curve(resultsframe(x_var = x_variables, y_var = y_variables))
+results_yrbs_sca_TV <- 
+  curve(resultsframe(x_var = x_TV, y_var = y_variables))
+results_yrbs_sca_ED <- 
+  curve(resultsframe(x_var = x_ED, y_var = y_variables))
 
 save(results_yrbs_sca, file = "2_1_sca_yrbs_results.rda")
+save(results_yrbs_sca_TV, file = "2_1_sca_yrbs_results_TV.rda")
+save(results_yrbs_sca_ED, file = "2_1_sca_yrbs_results_ED.rda")

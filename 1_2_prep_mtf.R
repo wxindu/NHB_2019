@@ -9,6 +9,7 @@ setwd(".../1_prep")
 #######################################################
 library("foreign")
 library("tidyverse")
+library("here")
 
 #######################################################
 # Read MTF Dataset
@@ -17,17 +18,33 @@ library("tidyverse")
 # String indicating data directory
 # Should lead to the folder containing the YRBS data
 folder_data <- ".../2_datasets/"
-
+load(here("data", "36799-0001-Data.rda"))
+data16 <- da36799.0001
+names(data) <- tolower(names(data))
+data <- data  %>% 
+  select(v1, v501, v7326, v7325, v7381, v7552, v7544, v7551, v7553, v7589, v7590, v7562, v7563, v7255,
+         v7302, v8512, v8502, v8505, v8509, v8514, v8536, v8504, v8501, v8508, v8503, v8507, 
+         v8511, v8513, v7501, v7502, v7504, v7504, v7507, v7508, v7202, v8503, v8502, 
+         v8511, v8513, v7502, v8509, v8531, v1070, v7505, v7208, v7216, v7217, v7329, v7221, v7254)
 # load data which is in one data file
 # the data file was merged manually from separate data files
 # these data files can be obtained directly from the mtf after signing the relevant agreement
 data <-
   read.spss(
-    paste(folder_data, "mtf_merged_data.sav", sep = ""),
+    #paste(folder_data, "mtf_merged_data.sav", sep = ""),
+    paste(data, "36799-0001-Data.rda", sep = ""),
     use.value.labels = FALSE,
     to.data.frame = TRUE,
     use.missings = TRUE
   )
+
+## Added: change factors to numerical variables
+l <- ncol(data)
+
+for(i in 3:l){
+  data[i] <- substr(data[[i]], 2, 2)
+  data[i] <- as.numeric(data[[i]])
+}
 
 # change names of columns to lowercase
 names(data) <- tolower(names(data))
@@ -185,3 +202,4 @@ table(data$v7202n)
 # Save as CSV for running large code on computer cluster
 ####################################################################################
 write.csv(file = "1_2_prep_mtf_data.csv", data)
+

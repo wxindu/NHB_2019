@@ -9,34 +9,36 @@ setwd(".../1_prep")
 #######################################################
 library("foreign")
 library("tidyverse")
-
+library(here)
+library(readxl)
+here()
 #######################################################
 # Read YRBS Dataset
 #######################################################
 
 # String indicating data directory
 # Should lead to the folder containing the YRBS data
-folder_data <- ".../2_datasets/"
+# folder_data <- ".../2_datasets/"
 
 # load data which is in one data file
 # the data file was modified in SPSS to make all variables 'scale' instead of 'factor' or 'ordinal'
 # the data filed can be obtained directly from the YRBS after signing  he relevant agreement
-data <-
-  read.spss(
-    paste(folder_data, "yrbs_data.sav", sep = ""),
-    use.value.labels = FALSE,
-    to.data.frame = TRUE,
-    use.missings = TRUE
-  )
-
+# data <-
+#   read.spss(
+#     paste(folder_data, "yrbs_data.sav", sep = ""),
+#     use.value.labels = FALSE,
+#     to.data.frame = TRUE,
+#     use.missings = TRUE
+#   )
+library(readxl)
+YRBS <- read_excel("data/SADCQ.xlsx", guess_max = 204000, col_types = c("text", "text", "text", rep("numeric", 147)))
 # change names of columns to lowercase
-names(data) <- tolower(names(data))
+# names(data) <- tolower(names(data))
 
 #######################################################
 # Choose appropriate years: 2007-2015
 #######################################################
-data <- data %>% filter(year > 2006)
-
+data <- YRBS %>% filter(year > 2006 & year <= 2015)
 #######################################################
 # Recode Variables
 # Make variables numeric, continuous
@@ -45,42 +47,58 @@ data <- data %>% filter(year > 2006)
 # Recoded technology use variables:
 #1 = none, 2 = <1hr a day, 3 = 1 hr a day, 4 = 2 hrs per day, 5 = 3 hrs per day, 6 = 4 hrs per day, 7 = 5 or more hrs per day
 #On an average school day, how many hours do you watch TV?
-data$q81_n <- as.numeric(data$q81) 
+#data$q81_n <- as.numeric(data$q81) It's q80 in my dataset
+data$q80_n <- as.numeric(data$q80)
 #On an average school day, how many hours do you play video or computer games or use a computer for something that is not school work? 
 #(Count time spent on things such as Xbox, PlayStation, an iPod, an iPad or other tablet, a smartphone, YouTube, Facebook or other social networking tools, and the Internet.)
-data$q82_n <- as.numeric(data$q82)
+#data$q82_n <- as.numeric(data$q82) It's q81 in my dataset
+data$q81_n <- as.numeric(data$q81)
 
 # Mean technology use variable
+#data$tech <-
+#  rowMeans(subset(data, select = c("q81_n", "q82_n")), na.rm = FALSE) 
 data$tech <-
-  rowMeans(subset(data, select = c("q81_n", "q82_n")), na.rm = FALSE) 
-
+  rowMeans(subset(data, select = c("q80_n", "q81_n")), na.rm = FALSE) 
 # Make recoded suicide related outcome variables
 #During the past 12 months, did you ever feel so sad or hopeless almost every day for two weeks or more in a row that you stopped doing some usual activities?
 #1 = yes, 2 = no
-data$q26_n <- ifelse(data$q26 == 1, 0, 1)
+#data$q26_n <- ifelse(data$q26 == 1, 0, 1) It's q25 in my dataset
+data$q25_n <- ifelse(data$q25 == 1, 0, 1)
 #During the past 12 months, did you ever seriously consider attempting suicide?
-data$q27_n <- ifelse(data$q27 == 1, 0, 1)
+#data$q27_n <- ifelse(data$q27 == 1, 0, 1) It's q26 in my dataset
+data$q26_n <- ifelse(data$q26 == 1, 0, 1)
 #During the past 12 months, did you make a plan about how you would attempt suicide?
-data$q28_n <- ifelse(data$q28 == 1, 0, 1)
+#data$q28_n <- ifelse(data$q28 == 1, 0, 1) It's q27 in my dataset
+data$q27_n <- ifelse(data$q27 == 1, 0, 1)
 
 # Create dichotomous suicide measure for questions 30 and 29
 #During the past 12 months, how many times did you actually attempt suicide?
 #1 = 0 times, 1 = 1 time, 2 = 2 or 3 times, 3 = 4 or 5 times, 5 = 6 or more times
 # code those as 1 who have not attempted suicide, everyone else 0
-data$q29_nd <- as.numeric(ifelse(data$q29 == 1, 1,
+# data$q29_nd <- as.numeric(ifelse(data$q29 == 1, 1,
+#                                  ifelse(
+#                                    data$q29 == 2, 0,
+#                                    ifelse(data$q29 == 3, 0,
+#                                           ifelse(data$q29 == 4, 0,
+#                                                  ifelse(data$q29 == 5, 0, NA)))
+#                                  ))) It's q28 in my dataset
+data$q28_nd <- as.numeric(ifelse(data$q28 == 1, 1,
                                  ifelse(
-                                   data$q29 == 2, 0,
-                                   ifelse(data$q29 == 3, 0,
-                                          ifelse(data$q29 == 4, 0,
-                                                 ifelse(data$q29 == 5, 0, NA)))
+                                   data$q28 == 2, 0,
+                                   ifelse(data$q28 == 3, 0,
+                                          ifelse(data$q28 == 4, 0,
+                                                 ifelse(data$q28 == 5, 0, NA)))
                                  )))
 
 #If you attempted suicide during the past 12 months, did any attempt result in an injury, poisoning, or overdose that had to be treated by a doctor or nurse?
 #1 = I did not attempt suicide in last 12 months, 2 = yes, 3 = No
 # Code those who did not attempt suicide or did not need to see a doctor as 1, those who had to see doctor as 0
-data$q30_nd <- as.numeric(ifelse(data$q30 == 1, 1,
-                                 ifelse(data$q30 == 2, 0,
-                                        ifelse(data$q30 == 3, 1, NA))))
+# data$q30_nd <- as.numeric(ifelse(data$q30 == 1, 1,
+#                                  ifelse(data$q30 == 2, 0,
+#                                         ifelse(data$q30 == 3, 1, NA)))) It's q29 in my dataset
+data$q29_nd <- as.numeric(ifelse(data$q29 == 1, 1,
+                                 ifelse(data$q29 == 2, 0,
+                                        ifelse(data$q29 == 3, 1, NA))))
 
 # Recode age as continuous
 # recode "12 years old or younger" to 12 
@@ -115,22 +133,29 @@ data$grade_n <- ifelse(data$grade == 1, 9,
 data$race_di <- ifelse(data$race4 == 1, 1, 0)
 
 # Reverse "soda drinking" so 7 = never drink soda, 1 = drink 4 or more times per day
-data$q77 <- 8 - data$q77
+# data$q77 <- 8 - as.numeric(data$q77) It's q76 in my dataset
+data$q76 <- 8 - as.numeric(data$q76)
 
 # Code that 1 = (cyber)bullied at school, 0 = not (cyber)bullied at school
 #Bullying at school
-data$q24_n <- ifelse(data$q24 == 1, 1, 0)
+#data$q24_n <- ifelse(data$q24 == 1, 1, 0) It's q23 in my dataset
+data$q23_n <- ifelse(data$q23 == 1, 1, 0)
 #Electronic bullying
-data$q25_n <- ifelse(data$q25 == 1, 1, 0)
+# data$q25_n <- ifelse(data$q25 == 1, 1, 0) It's q24 in my dataset
+data$q24_n <- ifelse(data$q24 == 1, 1, 0)
 
 ####################################################################################
 # Look at what tech and well-being questions were answered together 
 # question matrix
 ####################################################################################
-vars <- c("q81", "q82", "q29", "q26", "q27", "q28")
+# vars <- c("q81", "q82", "q29", "q26", "q27", "q28")
+vars <- c("q80", "q81", "q28", "q25", "q26", "q27")
 vars_data <- subset(data, select = vars)
 correlate <- psych::corr.test(vars_data)
 #knitr::kable(correlate$n)
+
+## Add q86r
+data$q86r <- 6 - data$q86
 
 ####################################################################################
 # Calculate number of participants

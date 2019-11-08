@@ -26,6 +26,14 @@ results_yrbs_sca %>% summarise(median_effect = median(effect, na.rm = TRUE),
                                median_effectsize = median(rsqrd, na.rm = TRUE), 
                                median_n = median(number, na.rm = TRUE),
                                median_se = median(standard_error, na.rm = TRUE))
+results_yrbs_sca_TV %>% summarise(median_effect = median(effect, na.rm = TRUE), 
+                               median_effectsize = median(rsqrd, na.rm = TRUE), 
+                               median_n = median(number, na.rm = TRUE),
+                               median_se = median(standard_error, na.rm = TRUE))
+results_yrbs_sca_ED %>% summarise(median_effect = median(effect, na.rm = TRUE), 
+                                  median_effectsize = median(rsqrd, na.rm = TRUE), 
+                                  median_n = median(number, na.rm = TRUE),
+                                  median_se = median(standard_error, na.rm = TRUE))
 
 results_yrbs_sca %>% filter(x_variable == "q81_n") %>% summarise(median_effect = median(effect, na.rm = TRUE), 
                                                                  median_effectsize = median(rsqrd, na.rm = TRUE),

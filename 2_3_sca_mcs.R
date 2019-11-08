@@ -5,7 +5,9 @@
 
 # Because we use the university computer cluster we load the relevant data
 vars <- Sys.getenv(c("HOME"))
-data <- read.csv(file=paste0(vars["HOME"],"/1_3_prep_mcs_data.csv"), header=TRUE, sep = ",")
+library(here)
+here()
+data <- read.csv("1_3_prep_mcs_data.csv", header=TRUE, sep = ",")
 set.seed(111)
 
 #######################################################
@@ -85,8 +87,8 @@ curve <- function(input) {
         scale(dv) ~ scale(iv) + scale(edumot) +
           scale(fd06e00) + scale(clpar) + scale(fcpaab00) +
           scale(fpwrdscm) + scale(fdacaq00) + scale(fd05s00) + 
-          scale(fpclsi00) + scale(fpchti00) + scale(fdkessl) + scale(fdtots00) +
-          scale(foede000),
+          scale(fpclsi00) + scale(fpchti00) + scale(fdkessl), #+ scale(fdtots00) +
+          #scale(foede000),
         data = data_short
       )
     }
@@ -131,6 +133,11 @@ x_variables <-
     "fcinth00r",
     "fcsome00r",
     "tech")
+TV <- c("fctvho00r")
+Games <- c("fccomh00r")
+Computer <- c("fccmex00r")
+Internet <- c("fcinth00r")
+SocialMedia <- c("fcsome00r")
 
 x_names <-
   c(
@@ -236,15 +243,15 @@ controls <-
     "edumot",
     "fd06e00",
     "clpar",
-    "fcpaab00",
+    "fcpaab00", # not numeric
     "fpwrdscm",
-    "fdacaq00",
-    "fd05s00",
-    "fpclsi00",
-    "fpchti00",
-    "fdkessl",
-    "fdtots00",
-    "foede000"
+    "fdacaq00", # not numeric
+    "fd05s00", # nn
+    "fpclsi00", # nn
+    "fpchti00", #nn
+    "fdkessl"#,
+    #"fdtots00", #nn
+    #"foede000"
   )
 
 #######################################################
@@ -292,8 +299,8 @@ data_short <-
     "fpclsi00",
     "fpchti00",
     "fdkessl",
-    "fdtots00",
-    "foede000",
+    #"fdtots00",
+    #"foede000",
     "tech"
   )]
 
@@ -303,6 +310,21 @@ data_short <-
 results_mcs_sca_cm <-
   curve(resultsframe(x_var = x_variables, y_var = y_variables_sample_cm))
 save(results_mcs_sca_cm, file = "2_3_sca_mcs_results_cm.rda")
+results_mcs_sca_cm_TV <-
+  curve(resultsframe(x_var = TV, y_var = y_variables_sample_cm))
+save(results_mcs_sca_cm_TV, file = "2_3_sca_mcs_results_cm_TV.rda")
+results_mcs_sca_cm_Games <-
+  curve(resultsframe(x_var = Games, y_var = y_variables_sample_cm))
+save(results_mcs_sca_cm_Games, file = "2_3_sca_mcs_results_cm_Games.rda")
+results_mcs_sca_cm_Internet <-
+  curve(resultsframe(x_var = Internet, y_var = y_variables_sample_cm))
+save(results_mcs_sca_cm_Internet, file = "2_3_sca_mcs_results_cm_Internet.rda")
+results_mcs_sca_cm_Computer <-
+  curve(resultsframe(x_var = Computer, y_var = y_variables_sample_cm))
+save(results_mcs_sca_cm_Computer, file = "2_3_sca_mcs_results_cm_Computer.rda")
+results_mcs_sca_cm_SocialMedia <-
+  curve(resultsframe(x_var = SocialMedia, y_var = y_variables_sample_cm))
+save(results_mcs_sca_cm_SocialMedia, file = "2_3_sca_mcs_results_cm_SocialMedia.rda")
 
 ####################################################################################
 # Execute Specification Curve Analyses for PARENTS
@@ -323,31 +345,31 @@ save(results_mcs_sca_cm, file = "2_3_sca_mcs_results_cm.rda")
 #######################################################
 y <-
   c(
-    "fpsdpf00",
+    "fpsdpf00", ##
     "fpsdro00",
     "fpsdhs00",
-    "fpsdsr00",
+    "fpsdsr00", ##
     "fpsdtt00",
     "fpsdsp00",
-    "fpsdor00",
+    "fpsdor00", ##
     "fpsdmw00",
-    "fpsdhu00",
+    "fpsdhu00", ##
     "fpsdfs00",
-    "fpsdgf00",
+    "fpsdgf00", ##
     "fpsdfb00",
     "fpsdud00",
-    "fpsdlc00",
+    "fpsdlc00", ##
     "fpsddc00",
     "fpsdnc00",
-    "fpsdky00",
+    "fpsdky00", ##
     "fpsdoa00",
     "fpsdpb00",
-    "fpsdvh00",
-    "fpsdst00",
+    "fpsdvh00", ##
+    "fpsdst00", ##
     "fpsdcs00",
     "fpsdgb00",
     "fpsdfe00",
-    "fpsdte00"
+    "fpsdte00" ##
   )
 y_variables <- (do.call("c", lapply(seq_along(y), function(i) combn(y, i, FUN = list))))
 y_variables_sample <- sample(y_variables[-(1:length(y))], 801, replace = FALSE)
@@ -421,13 +443,29 @@ data_short <-
     "fpwrdscm",
     "fpclsi00",
     "fpchti00",
-    "fdkessl",
-    "fdtots00",
-    "foede000"
+    "fdkessl"#,
+    #"fdtots00",
+    #"foede000"
   )]
 
 # run and save
 results_mcs_sca_pr <-
   curve(resultsframe(x_var = x_variables, y_var = y_variables_sample_pr))
+results_mcs_sca_TV_pr <- 
+  curve(resultsframe(x_var = TV, y_var = y_variables_sample_pr))
+results_mcs_sca_Games_pr <- 
+  curve(resultsframe(x_var = Games, y_var = y_variables_sample_pr))
+results_mcs_sca_Computer_pr <- 
+  curve(resultsframe(x_var = Computer, y_var = y_variables_sample_pr))
+results_mcs_sca_Internet_pr <- 
+  curve(resultsframe(x_var = Internet, y_var = y_variables_sample_pr))
+results_mcs_sca_SocialMedia_pr <- 
+  curve(resultsframe(x_var = SocialMedia, y_var = y_variables_sample_pr))
+
 save(results_mcs_sca_pr, file = "2_3_sca_mcs_results_pr.rda")
+save(results_mcs_sca_TV_pr, file = "2_3_sca_mcs_results_pr_TV.rda")
+save(results_mcs_sca_Games_pr, file = "2_3_sca_mcs_results_pr_Games.rda")
+save(results_mcs_sca_Computer_pr, file = "2_3_sca_mcs_results_pr_Computer.rda")
+save(results_mcs_sca_Internet_pr, file = "2_3_sca_mcs_results_pr_Internet.rda")
+save(results_mcs_sca_SocialMedia_pr, file = "2_3_sca_mcs_results_pr_SocialMedia.rda")
 

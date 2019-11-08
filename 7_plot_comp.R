@@ -20,11 +20,20 @@ library(grid)
 x_variables <- c("fchtcm00", "fccycf00r", "fcbrkn00", "fcfrut00", 
                  "fcvegi00", "sleeptime", "fcglas00r", 
                  "fcares00r", "fchurt00r", "fccanb00r", "fcalfv00r", 
-                 "hand", "tech")
+                 "hand", "fctvho00r",
+                 "fccomh00r",
+                 "fccmex00r",
+                 "fcinth00r",
+                 "fcsome00r", 
+                 "tech" )
 x_names <- c("Height", "Bicycle Use", "Breakfast", "Fruit", 
              "Vegetabes", "Sleep", "Glasses", 
              "Been Arrested", "Bullying", "Smoked Weed", "Bingedrinking", 
-             "Handedness", "Technology Use")
+             "Handedness", "Weekday TV",
+             "Weekday Electronic Games",
+             "Own Computer",
+             "Use Internet at Home",
+             "Hours of Social Media Use","Technology Use")
 vars <- as.data.frame(cbind(x_variables, x_names))
 names(vars) <- c("Group.1", "Names")
 
@@ -37,7 +46,7 @@ medians <- left_join(medians, vars, by = "Group.1" )
 names(medians) <- c("Var_name", "x", "Group.1")
 medians$percentage <- ((medians$x-medians[13,2])/abs(medians[13,2])*100)
 medians$times <- medians$x/medians[13,2]
-medians
+medians %>% arrange(x)
 
 number <- aggregate(results_mcs_ds_comp[, 7:9], list(results_mcs_ds_comp$x_variable), median)
 number$number <- round(number$number, 0)
@@ -49,12 +58,13 @@ number
 # Plot medians
 #####################################
 median_plot <- medians %>% 
-  filter(Group.1 %in% c("Bicycle Use", "Height", "Handedness", "Glasses", "Technology Use")) %>%
+  filter(Group.1 %in% c("Bullying", "Use Internet at Home", "Glasses", "Hours of Social Media Use", "Smoked Weed", "Technology Use", 
+                        "Bingedrinking", "Weekday TV", "Been Arrested", "Handedness", "Weekday Electronic Games", "Own Computer", "Fruit")) %>%
   arrange(x)
 median_plot$group_factor <- factor(median_plot$Group.1, ordered = TRUE)
-median_plot$group_factor <- factor(median_plot$group_factor, levels(median_plot$group_factor)[c(2,5,3,4,1)])
+median_plot$group_factor <- factor(median_plot$group_factor, levels(median_plot$group_factor)[c(3, 11, 5, 7, 9, 10, 2, 13, 1, 6, 12, 8, 4)])
 bar1 <- ggplot(data = median_plot, aes(x = group_factor, y = x, fill = group_factor)) +
-  scale_fill_manual(values = magma(5, alpha = 0.4, begin = 0, end = 0.8, direction = 1), guide = FALSE) +
+  scale_fill_manual(values = viridis(13, alpha = 0.4, begin = 0, end = 0.8, direction = 1), guide = FALSE) +
   coord_flip() +
   geom_bar(stat="identity") + 
   scale_x_discrete(position = "top") +
@@ -243,14 +253,15 @@ setwd(".../5_comp")
 #####################################
 # X variables and X names
 #####################################
-x_variables <- c("q72", "q79", "q76", "q88",
-                 "q74", "q78", "q69", "q87r",
-                 "q47", "q44", "q24_n", "q18", "tech")
+x_variables <- c("q71", "q78", "q75", "q87",
+                 "q73", "q77", "q68", "q86r",
+                 "q46", "q43", "q23_n", "q17", "tech", "q80_n", "q81_n")
 
 x_names <- c("Eat fruit", "Eat breakfast", "Eat vegetables", "hours sleep", 
              "Eat potatoes", "Drink Milk", "Perceived Weight", "Asthma",
              "Marijuana", "Bingedrinking", "Bullied", "Fight",
-             "technology use")
+             "technology use", 
+             "TV Use", "Electronic Device Use")
 vars <- as.data.frame(cbind(x_variables, x_names))
 names(vars) <- c("Group.1", "Names")
 
@@ -272,6 +283,20 @@ number$rsqrd <- round(number$rsqrd, 3)
 number$standard_error <- round(number$standard_error, 3)
 number <- left_join(number, vars, by = "Group.1" )
 number
+
+#breakfast, asthma, sleep,  Milk, 
+#fruit, TV use, vegetables, potatoes, tech use, perceived weight, ED Use
+#binge drinking, marijuana, fight, bully
+medians$group_factor <- factor(medians$Group.1, ordered = TRUE)
+medians$group_factor <- factor(medians$group_factor, levels(medians$group_factor)[c(3, 10, 12, 2, 9, 13, 14, 7, 8, 15, 6, 4, 11, 1, 5)])
+bar2 <- ggplot(data = medians, aes(x = group_factor, y = x, fill = group_factor)) +
+  scale_fill_manual(values = viridis(15, alpha = 0.4, begin = 0, end = 0.8, direction = 1), guide = FALSE) +
+  coord_flip() +
+  geom_bar(stat="identity") + 
+  scale_x_discrete(position = "top") +
+  theme(text = element_text(size=7)) +
+  labs(x = "Adolescent Variable", y = "Median Standardised Regression Coefficient")
+bar2
 
 #####################################
 # Load specification data 
@@ -297,7 +322,7 @@ for (i in 1:length(x_variables)){
   temp_data$upper <- temp_data$effect+temp_data$standard_error ##add standard errors
   temp_data$lower <- temp_data$effect-temp_data$standard_error
   
-  if (temp_data[1,1] != "tech"){
+  if (temp_data[1,1] != "tech" & temp_data[1,1] != "TV Use" & temp_data[1,1] != "Electronic Device Use"){
     if (temp_data[1,1] %in% x_variables[c(1,2,3,4)]){
       temp_data$level <- "Panel A: Positive"
     } else if (temp_data[1,1] %in% x_variables[c(5,6,7,8)]){
@@ -325,27 +350,32 @@ temp_data <- do.call("rbind", list(temp_data_1, temp_data_2, temp_data_3, temp_d
                                    temp_data_9, temp_data_10, temp_data_11, temp_data_12,
                                    temp_data_tech_1, temp_data_tech_2,
                                    temp_data_tech_3))
-temp_data$x_variable <- dplyr::recode(temp_data$x_variable, 'q72'='Fruit',
-                                      'q79'='Breakfast',
-                                      'q76'='Vegetables',
-                                      'q88'='Sleep',
-                                      'q74'='Potatoes',
-                                      'q78'='Milk',
-                                      'q69'='Perceived Weight',
-                                      'q87r'='Asthma',
-                                      'q47'='Marijuana',
-                                      'q44'='Binge Drinking',
-                                      'q24_n'='Bullied',
-                                      'q18'='Fight',
-                                      'tech'='Technology')
+temp_data$x_variable <- dplyr::recode(temp_data$x_variable, 'q71'='Fruit',
+                                      'q78'='Breakfast',
+                                      'q75'='Vegetables',
+                                      'q87'='Sleep',
+                                      'q73'='Potatoes',
+                                      'q77'='Milk',
+                                      'q68'='Perceived Weight',
+                                      'q86r'='Asthma',
+                                      'q46'='Marijuana',
+                                      'q43'='Binge Drinking',
+                                      'q23_n'='Bullied',
+                                      'q17'='Fight',
+                                      'tech'='Technology', 
+                                      'q80_n' = 'TV Use', 
+                                      'q81_n' = 'Electronic Device Use')
 
 #order: sleep, breakfast, fruit, vegetables, 
 #asthma, milk, potatoes, perceived weight, tech,
 #binge drinking, marijuana, fight, bully
+
+#breakfast, asthma,  Milk, 
+#fruit, TV use, vegetables, potatoes, tech use, perceived weight, ED Use
+#binge drinking, marijuana, fight, bully
 temp_data$x_variable_f <- factor(temp_data$x_variable, ordered = TRUE)
-temp_data$x_variable_f <- factor(temp_data$x_variable_f, levels(temp_data$x_variable_f)[c(11, 3, 6, 12,
-                                                                                          1, 8, 10, 9,
-                                                                                          13, 2, 7, 5, 4)])
+temp_data$x_variable_f <- factor(temp_data$x_variable_f, levels(temp_data$x_variable_f)[c(3, 1, 9, 7, 14, 15, 11, 13, 10, 
+                                                                                          5, 2, 8, 6, 4)])
 
 #############################################
 # Specification indicators: Curve
@@ -409,6 +439,21 @@ p3_yrbs <- ggplot(data = xs$`Panel A: Positive`, aes(x = index, colour = x_varia
   facet_grid(. ~level, scales="free")
 grid.arrange(p3_yrbs,p2_yrbs,p1_yrbs, nrow = 3)
 g2 <- arrangeGrob(p3_yrbs,p2_yrbs,p1_yrbs, nrow = 3)
+
+
+ggplot(data = temp_data, aes(x = effect, colour = x_variable_f, fill = x_variable_f)) +
+  #geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.4,  colour=NA) +
+  geom_line(aes(y=effect), size = 0.2) +
+  scale_colour_manual(values = magma(14, alpha = 1, begin = 0, end = 0.8, direction = -1), guide = FALSE) +
+  scale_fill_manual(values = magma(14, alpha = 0.0000001, begin = 0, end = 0.8, direction = -1)) +
+  theme(legend.title = element_blank(), 
+        legend.text=element_text(size=8), 
+        legend.margin = margin(0,0), 
+        legend.key.size = unit(0.3, "cm"),
+        legend.position = c(0.8, 0.2),
+        strip.background = element_rect(colour="white", fill="white")) +
+  labs(fill="", x = "Specification (Ranked)", y = "Standardised Regression Coefficient") +
+  scale_y_continuous(labels=scaleFUN)
 
 setwd(".../7_plot_comp")
 ggsave(filename = paste("sfig9.png"),

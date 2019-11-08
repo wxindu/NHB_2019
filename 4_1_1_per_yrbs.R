@@ -10,12 +10,17 @@
 ##########################################################################################
 library(tidyr)
 library(dplyr)
-
+library(here)
 vars <- Sys.getenv(c("HOME","SLURM_ARRAY_JOB_ID","SLURM_ARRAY_TASK_ID"))
 data <- read.csv(file=paste0(vars["HOME"],"/1_1_prep_yrbs_data.csv"), header=TRUE, sep = ",")
-
+data <- read.csv(here("1_1_prep_yrbs_data.csv"), header = TRUE, sep = ",")
 # We run 1 bootstrap with each script and then merge them together in 4_1_2_per_yrbs.R
-bootstraps <- 1
+nrow(data)
+set.seed(111)
+index <- base::sample(1:nrow(data), 10000)
+sub_data <- data[index,]
+
+bootstraps <- 600
 
 ####################################################################################
 # Function "resultsframe"
@@ -65,13 +70,16 @@ resultsframe <- function(x_var, y_var) {
 #######################################################
 # X Variables
 #######################################################
-x_variables <- c("q81_n", "q82_n", "tech")
+# x_variables <- c("q81_n", "q82_n", "tech")
+# x_names <- c("TV Use", "Electronic Device Use", "tech")
+x_variables <- c("q80_n", "q81_n", "tech")
 x_names <- c("TV Use", "Electronic Device Use", "tech")
 
 #######################################################
 # Y Variables
 #######################################################
-y <-  c("q26_n", "q27_n", "q28_n", "q29_nd", "q30_nd")
+# y <-  c("q26_n", "q27_n", "q28_n", "q29_nd", "q30_nd")
+y <-  c("q25_n", "q26_n", "q27_n", "q28_nd", "q29_nd")
 y_variables <-
   (do.call("c", lapply(seq_along(y), function(i)
     combn(y, i, FUN = list))))
@@ -105,6 +113,20 @@ data_select <- data[, c(
   "q28_n",
   "q29_nd",
   "q30_nd",
+  "year",
+  "race_di",
+  "tech"
+)]
+data_select$id <- seq.int(nrow(data_select))
+
+data_select <- data[, c(
+  "q80_n",
+  "q81_n",
+  "q25_n",
+  "q26_n",
+  "q27_n",
+  "q28_nd",
+  "q29_nd",
   "year",
   "race_di",
   "tech"
@@ -186,7 +208,7 @@ names(permutation_frame) <-
     "sign.sig.pos.boot.nc"
   )
 permutation_frame$permutation_number <- seq.int(bootstraps)
-
+start <- Sys.time()
 for (m in 1:(bootstraps)) {
 #  gc()
   print(m)
@@ -241,47 +263,65 @@ for (m in 1:(bootstraps)) {
   permutation_frame[m, 2] <-
     mean(results_frame[["effect"]], na.rm = TRUE)
   permutation_frame[m, 3] <-
-    table(sign(results_frame[["effect"]]))[["-1"]]
+    # table(sign(results_frame[["effect"]]))[["-1"]]
+    sum(sign(results_frame[["effect"]]) == "-1")
   permutation_frame[m, 4] <-
-    table(sign(results_frame[["effect"]]))[["1"]]
+    # table(sign(results_frame[["effect"]]))[["1"]]
+    sum(sign(results_frame[["effect"]]) == "1")
   results_frame_sig <- results_frame %>% filter(p_value < 0.05)
   permutation_frame[m, 5] <-
-    table(sign(results_frame_sig[["effect"]]))[["-1"]]
+    # table(sign(results_frame_sig[["effect"]]))[["-1"]]
+    sum(sign(results_frame_sig[["effect"]]) == "-1")
   permutation_frame[m, 6] <-
-    table(sign(results_frame_sig[["effect"]]))[["1"]]
+    # table(sign(results_frame_sig[["effect"]]))[["1"]]
+    sum(sign(results_frame_sig[["effect"]]) == "1")
   
   results_frame_nc <-
     results_frame %>% filter(controls == "No Controls")
   permutation_frame[m, 7] <-
     mean(results_frame_nc[["effect"]], na.rm = TRUE)
   permutation_frame[m, 8] <-
-    table(sign(results_frame_nc[["effect"]]))[["-1"]]
+    # table(sign(results_frame_nc[["effect"]]))[["-1"]]
+    sum(sign(results_frame_nc[["effect"]]) == "-1")
   permutation_frame[m, 9] <-
-    table(sign(results_frame_nc[["effect"]]))[["1"]]
+    # table(sign(results_frame_nc[["effect"]]))[["1"]]
+    sum(sign(results_frame_nc[["effect"]]) == "1")
   results_frame_sig <- results_frame_nc %>% filter(p_value < 0.05)
   permutation_frame[m, 10] <-
-    table(sign(results_frame_sig[["effect"]]))[["-1"]]
+    # table(sign(results_frame_sig[["effect"]]))[["-1"]]
+    sum(sign(results_frame_sig[["effect"]]) == "-1")
   permutation_frame[m, 11] <-
-    table(sign(results_frame_sig[["effect"]]))[["1"]]
+    # table(sign(results_frame_sig[["effect"]]))[["1"]]
+    sum(sign(results_frame_sig[["effect"]]) == "1")
   
   results_frame_c <-
     results_frame %>% filter(controls == "Controls")
   permutation_frame[m, 12] <-
     mean(results_frame_c[["effect"]], na.rm = TRUE)
   permutation_frame[m, 13] <-
-    table(sign(results_frame_c[["effect"]]))[["-1"]]
+    # table(sign(results_frame_c[["effect"]]))[["-1"]]
+    sum(sign(results_frame_c[["effect"]]) == "-1")
   permutation_frame[m, 14] <-
-    table(sign(results_frame_c[["effect"]]))[["1"]]
+    # table(sign(results_frame_c[["effect"]]))[["1"]]
+    sum(sign(results_frame_c[["effect"]]) == "1")
   results_frame_sig <- results_frame_c %>% filter(p_value < 0.05)
+  # permutation_frame[m, 15] <-
+  #   table(sign(results_frame_sig[["effect"]]))[["-1"]]
+  # permutation_frame[m, 16] <-
+  #   table(sign(results_frame_sig[["effect"]]))[["1"]]
+  sign <- sign(results_frame_sig[["effect"]])
   permutation_frame[m, 15] <-
-    table(sign(results_frame_sig[["effect"]]))[["-1"]]
+    sum(sign == "-1")
   permutation_frame[m, 16] <-
-    table(sign(results_frame_sig[["effect"]]))[["1"]]
+    sum(sign == "1")
   
 }
-
+end <- Sys.time()
+end - start
+#1.3 minutes per bootstrap; try with 600 bootstraps; estimated time about 13 hours
 #######################################################
 # Print and Save Permutations
 #######################################################
 print(permutation_frame)
 write.csv(permutation_frame,file=paste0(vars["HOME"],"/yrbs_permutation_frame.",vars["SLURM_ARRAY_JOB_ID"],".",vars["SLURM_ARRAY_TASK_ID"], ".csv"))
+write.csv(permutation_frame, here("yrbs_permutation_frame.csv"))
