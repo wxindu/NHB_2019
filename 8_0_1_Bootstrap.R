@@ -90,7 +90,7 @@ SCA_single <- function(study, x_var, y_var, controls, combination, data, mc.core
 
 SCA_full <- function(study, data, core = 8){
   if(study == "yrbs"){
-######## yrbs
+    ######## yrbs
     x_variables <- c("q80_n", "q81_n", "tech")
     y <-  c("q25_n", "q26_n", "q27_n", "q28_nd", "q29_nd")
     y_variables <-
@@ -102,7 +102,7 @@ SCA_full <- function(study, data, core = 8){
       "q80_n", "q81_n", "tech", "q25_n", "q26_n", "q27_n", "q28_nd", "q29_nd", "year", "race_di"
     )]
   } else if (study == "mcs"){
-######## mcs
+    ######## mcs
     x_variables <-
       c("fctvho00r", "fccomh00r", "fccmex00r", "fcinth00r", "fcsome00r", "tech")
     y <-
@@ -138,12 +138,12 @@ SCA_full <- function(study, data, core = 8){
   r1 <- resultsframe(x_var = x_variables, y_var = y_variables)
   dupdata <- list(data)[rep(1, nrow(r1))]
   l <- mcmapply(FUN = SCA_single, 
-                   rep(study, nrow(r1)),
-                   x_var = r1$x_variable, 
-                   y_var = r1$y_variable, 
-                   controls = r1$controls, 
-                   combination = r1$combination, 
-                   data = dupdata, mc.cores = core)
+                rep(study, nrow(r1)),
+                x_var = r1$x_variable, 
+                y_var = r1$y_variable, 
+                controls = r1$controls, 
+                combination = r1$combination, 
+                data = dupdata, mc.cores = core)
   data <- bind_cols(r1, 
                     coef = unlist(l[1, ]), 
                     t_value = unlist(l[2, ]), 
@@ -163,80 +163,64 @@ system.time(SCA_result_mcs <- SCA_full("mcs", data))
 SCA_result_mcs %>% summarize(median = median(coef))
 
 
-perm_SCA <- function(study, data, perm_num, cores = 8){
-  perms <- mcmapply(FUN = sample, list(1:nrow(data))[rep(1, perm_num)], rep(nrow(data), perm_num), replace = FALSE)
+boot_SCA <- function(study, data, boot_num, cores = 8){
+  boots <- mcmapply(FUN = sample, list(1:nrow(data))[rep(1, boot_num)], rep(nrow(data), boot_num), replace = TRUE)
   if (study == "yrbs"){
-    SCA_perm_result <- data.frame(median_coef = rep(0, perm_num), 
-                                  median_q80_n_coef = rep(0, perm_num), 
-                                  median_q81_n_coef = rep(0, perm_num),
-                                  median_tech_coef = rep(0, perm_num),
-                                  dom_share = rep(0, perm_num), 
-                                  dom_share_q80_n = rep(0, perm_num), 
-                                  dom_share_q81_n = rep(0, perm_num),
-                                  dom_share_tech = rep(0, perm_num),
-                                  dom_sig_share = rep(0, perm_num), 
-                                  dom_sig_share_q80_n = rep(0, perm_num),
-                                  dom_sig_share_q81_n = rep(0, perm_num), 
-                                  dom_sig_share_tech = rep(0, perm_num)
+    SCA_boot_result <- data.frame(median_coef = rep(0, boot_num), 
+                                  median_q80_n_coef = rep(0, boot_num), 
+                                  median_q81_n_coef = rep(0, boot_num),
+                                  median_tech_coef = rep(0, boot_num),
+                                  dom_share = rep(0, boot_num), 
+                                  dom_share_q80_n = rep(0, boot_num), 
+                                  dom_share_q81_n = rep(0, boot_num),
+                                  dom_share_tech = rep(0, boot_num),
+                                  dom_sig_share = rep(0, boot_num), 
+                                  dom_sig_share_q80_n = rep(0, boot_num),
+                                  dom_sig_share_q81_n = rep(0, boot_num), 
+                                  dom_sig_share_tech = rep(0, boot_num)
     )
   } else if (study == "mcs"){
-    SCA_perm_result <- data.frame(median_coef = rep(0, perm_num), 
-                                  median_q80_n_coef = rep(0, perm_num), 
-                                  median_q81_n_coef = rep(0, perm_num),
-                                  median_tech_coef = rep(0, perm_num),
-                                  dom_share = rep(0, perm_num), 
-                                  dom_share_q80_n = rep(0, perm_num), 
-                                  dom_share_q81_n = rep(0, perm_num),
-                                  dom_share_tech = rep(0, perm_num),
-                                  dom_sig_share = rep(0, perm_num), 
-                                  dom_sig_share_q80_n = rep(0, perm_num),
-                                  dom_sig_share_q81_n = rep(0, perm_num), 
-                                  dom_sig_share_tech = rep(0, perm_num)
+    SCA_boot_result <- data.frame(median_coef = rep(0, boot_num), 
+                                  median_q80_n_coef = rep(0, boot_num), 
+                                  median_q81_n_coef = rep(0, boot_num),
+                                  median_tech_coef = rep(0, boot_num),
+                                  dom_share = rep(0, boot_num), 
+                                  dom_share_q80_n = rep(0, boot_num), 
+                                  dom_share_q81_n = rep(0, boot_num),
+                                  dom_share_tech = rep(0, boot_num),
+                                  dom_sig_share = rep(0, boot_num), 
+                                  dom_sig_share_q80_n = rep(0, boot_num),
+                                  dom_sig_share_q81_n = rep(0, boot_num), 
+                                  dom_sig_share_tech = rep(0, boot_num)
     )
   }
-  for (i in 1:perm_num){
+  for (i in 1:boot_num){
+    boot_index <- boots[,i]
+    data <- data[boot_index,]
+    SCA_boot_one <- SCA_full(study, data)
     if (study == "yrbs"){
-      y_variables <-  c("q25_n", "q26_n", "q27_n", "q28_nd", "q29_nd")
-      data$q25_n <- data[perms[,i],]$q25_n
-      data$q26_n <- data[perms[,i],]$q26_n
-      data$q27_n <- data[perms[,i],]$q27_n
-      data$q28_nd <- data[perms[,i],]$q28_nd
-      data$q29_nd <- data[perms[,i],]$q29_nd
+      SCA_boot_one_q80_n <- SCA_boot_one %>% filter(x_variable == "q80_n")
+      SCA_boot_one_q81_n <- SCA_boot_one %>% filter(x_variable == "q81_n")
+      SCA_boot_one_tech <- SCA_boot_one %>% filter(x_variable == "tech")
       
-    } else if (study == "mcs"){
-      x_variables <-
-        c("fctvho00r", "fccomh00r", "fccmex00r", "fcinth00r", "fcsome00r", "tech")
-      data$fctvho00r <- data[perms[,i],]$fctvho00r
-      data$fccomh00r <- data[perms[,i],]$fccomh00r
-      data$fccmex00r <- data[perms[,i],]$fccmex00r
-      dara$fcinth00r <- data[perms[,i],]$fcinth00r
-      data$fcsome00r <- data[perms[,i],]$fcsome00r
-      data$tech <- data[perms[,i],]$tech
-    }
-    SCA_perm_one <- SCA_full(study, data)
-    if (study == "yrbs"){
-      SCA_perm_one_q80_n <- SCA_perm_one %>% filter(x_variable == "q80_n")
-      SCA_perm_one_q81_n <- SCA_perm_one %>% filter(x_variable == "q81_n")
-      SCA_perm_one_tech <- SCA_perm_one %>% filter(x_variable == "tech")
-      
-      SCA_perm_result[i, "median_coef"] <- median(SCA_perm_one$coef)
-      SCA_perm_result[i, "median_q80_n_coef"] <- median(SCA_perm_one_q80_n$coef)
-      SCA_perm_result[i, "median_q81_n_coef"] <- median(SCA_perm_one_q81_n$coef)
-      SCA_perm_result[i, "median_tech_coef"] <- median(SCA_perm_one_tech$coef)
+      SCA_boot_result[i, "median_coef"] <- median(SCA_boot_one$coef)
+      SCA_boot_result[i, "median_q80_n_coef"] <- median(SCA_boot_one_q80_n$coef)
+      SCA_boot_result[i, "median_q81_n_coef"] <- median(SCA_boot_one_q81_n$coef)
+      SCA_boot_result[i, "median_tech_coef"] <- median(SCA_boot_one_tech$coef)
       
       dom_sign = "-1"
-      SCA_perm_result[i, "dom_share"] <- sum(sign(SCA_perm_one$coef) == -1)/nrow(SCA_perm_one)
-      SCA_perm_result[i, "dom_share_q80_n"] <- sum(sign(SCA_perm_one_q80_n$coef) == -1)/nrow(SCA_perm_one_q80_n)
-      SCA_perm_result[i, "dom_share_q81_n"] <- sum(sign(SCA_perm_one_q81_n$coef) == -1)/nrow(SCA_perm_one_q81_n)
-      SCA_perm_result[i, "dom_share_tech"] <- sum(sign(SCA_perm_one_tech$coef) == -1)/nrow(SCA_perm_one_tech)
+      SCA_boot_result[i, "dom_share"] <- sum(sign(SCA_boot_one$coef) == -1)/nrow(SCA_boot_one)
+      SCA_boot_result[i, "dom_share_q80_n"] <- sum(sign(SCA_boot_one_q80_n$coef) == -1)/nrow(SCA_boot_one_q80_n)
+      SCA_boot_result[i, "dom_share_q81_n"] <- sum(sign(SCA_boot_one_q81_n$coef) == -1)/nrow(SCA_boot_one_q81_n)
+      SCA_boot_result[i, "dom_share_tech"] <- sum(sign(SCA_boot_one_tech$coef) == -1)/nrow(SCA_boot_one_tech)
       
-      SCA_perm_result[i, "dom_sig_share"] <- sum(sign(SCA_perm_one$coef) == -1 & SCA_perm_one$p_value < 0.05)/nrow(SCA_perm_one)
-      SCA_perm_result[i, "dom_sig_share_q80_n"] <- sum(sign(SCA_perm_one_q80_n$coef) == -1 & SCA_perm_one$p_value < 0.05)/nrow(SCA_perm_one_q80_n)
-      SCA_perm_result[i, "dom_sig_share_q81_n"] <- sum(sign(SCA_perm_one_q81_n$coef) == -1 & SCA_perm_one$p_value < 0.05)/nrow(SCA_perm_one_q81_n)
-      SCA_perm_result[i, "dom_sig_share_tech"] <- sum(sign(SCA_perm_one_tech$coef) == -1 & SCA_perm_one$p_value < 0.05)/nrow(SCA_perm_one_tech)
+      SCA_boot_result[i, "dom_sig_share"] <- sum(sign(SCA_boot_one$coef) == -1 & SCA_boot_one$p_value < 0.05)/nrow(SCA_boot_one)
+      SCA_boot_result[i, "dom_sig_share_q80_n"] <- sum(sign(SCA_boot_one_q80_n$coef) == -1 & SCA_boot_one$p_value < 0.05)/nrow(SCA_boot_one_q80_n)
+      SCA_boot_result[i, "dom_sig_share_q81_n"] <- sum(sign(SCA_boot_one_q81_n$coef) == -1 & SCA_boot_one$p_value < 0.05)/nrow(SCA_boot_one_q81_n)
+      SCA_boot_result[i, "dom_sig_share_tech"] <- sum(sign(SCA_boot_one_tech$coef) == -1 & SCA_boot_one$p_value < 0.05)/nrow(SCA_boot_one_tech)
     }
   }
-  return(SCA_perm_result)
+  return(SCA_boot_result)
 }
-system.time(perm_test <- perm_SCA("yrbs", data, 10))
-write_csv(perm_test, here("data"))
+system.time(boot_test <- boot_SCA("yrbs", data, 10))
+write_csv(boot_test, here("data"))
